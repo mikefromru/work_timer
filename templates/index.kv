@@ -1,0 +1,72 @@
+<WindowManager>
+    MainScreen:
+        id: main
+        name: 'main_screen'
+    DetailScreen:
+        id: detail 
+        name: 'detail_screen'
+
+<DetailScreen>
+#    BoxLayout:
+#        orientation: 'vertical'
+    MDToolbar:
+        pos_hint: {'top': 1}
+        left_action_items: [['arrow-left', lambda x: root.go_back()]]
+        right_action_items: [['delete', lambda x: root.delete()]]
+        
+    MDLabel:
+        id: timer
+        text: str(root.tmp)
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        halign: 'center'
+        font_size: dp(20)
+
+    
+    MDRectangleFlatButton:
+        id: start
+        text: 'start'
+        font_size: dp(20)
+        pos_hint: {'center_x': .5, 'center_y': .3}
+        on_release: root.start_button()
+
+<TwoLineAvatarIconListItemCustom>
+
+    ImageLeftWidget:
+        source: "data/logo/kivy-icon-256.png"
+
+#IconLeftWidget:
+#        icon: 'plus'
+
+    IconRightWidget:
+        icon: 'delete'
+
+
+
+<Content>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+
+    MDTextField:
+        id: t1
+        hint_text: "Name"
+    MDTextField:
+        id: t2
+
+<MainScreen>
+    BoxLayout:
+        orientation: 'vertical'
+        
+        ScrollView:
+            MDList:
+                id: container
+
+        MDBottomAppBar:
+            MDToolbar:
+                title: 'Work-Time'
+                icon: 'plus'
+                type: 'bottom'
+                on_action_button: root.callback_0(self.icon)
+
+
