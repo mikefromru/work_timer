@@ -1,3 +1,4 @@
+#:import MainScreen main.MainScreen
 <WindowManager>
     MainScreen:
         id: main
@@ -13,14 +14,32 @@
         pos_hint: {'top': 1}
         left_action_items: [['arrow-left', lambda x: root.go_back()]]
         right_action_items: [['delete', lambda x: root.delete()]]
-        
+
+    BoxLayout:
+        orientation: 'horizontal'
+        MDChip:
+            text: '30 minutes'
+            icon: ''
+            color: .4470588235118, .1960787254902, 0, 1
+        MDChip:
+            text: '1 hour'
+            icon: ''
+            color: .4470588235118, .1960787254902, 0, 1
+        MDChip:
+            text: '2 hour'
+            color: .4470588235118, .1960787254902, 0, 1
+            icon: ''
+        MDChip:
+            text: '3 hour'
+            icon: ''
+            color: .4470588235118, .1960787254902, 0, 1
+
     MDLabel:
         id: timer
         text: str(root.tmp)
         pos_hint: {'center_x': .5, 'center_y': .5}
         halign: 'center'
         font_size: dp(20)
-
     
     MDRectangleFlatButton:
         id: start
@@ -39,8 +58,8 @@
 
     IconRightWidget:
         icon: 'delete'
-
-
+        on_release: root.delete(self)
+#        on_release: MainScreen.remove(self)
 
 <Content>
     orientation: "vertical"

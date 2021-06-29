@@ -3,8 +3,10 @@ import os, sys
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 home = os.path.expanduser('~')
 script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(home + '/bin/env/lib/python3.8/site-packages')
+sys.path.append(home + '/bin/notify_work/env/lib/python3.8/site-packages')
 #print(sys.path)
+
+from icecream import ic
 
 from kivymd.app import MDApp
 import time
@@ -45,32 +47,47 @@ class DetailScreen(Screen):
     timer = NumericProperty()
     tmp = StringProperty()
     start = False
+    stop = False
 
     def on_enter(self):
         self.store = JsonStore("Items.json")
-        var = self.store.get(self.name_)
-        self.timer = var.get('time')
+        self.var = self.store.get(self.name_)
+        self.timer = self.var.get('time')
         self.tmp = time.strftime('%H:%M:%S', time.gmtime(self.timer))
+
         #self.sound = SoundLoader.load('sound.ogg')
         
-        self.sound = SoundLoader.load('name.mp3')
+        self.sound = SoundLoader.load('sounds/name.mp3')
 
     def start_button(self):
-        if self.start == False:
-            self.even = Clock.schedule_interval(self.run, 1)
-            self.start = True
-        elif self.start:
-            self.ids.start.text = 'start' if self.ids.start.text != 'start' else 'pause'
 
-        if self.ids.start.text == 'start':
-            self.even()
-        else:
+        if self.ids.start.text == 'stop':
+            self.sound.stop()
+            ic('how are you')
             self.even.cancel()
+            self.stop = True
+            self.ids.start.text = 'start'
+            self.start = False
+            self.timer = self.var.get('time')
+            self.ids.timer.text = time.strftime('%H:%M:%S', time.gmtime(self.timer))
+             
+        else:
+            if self.start == False:
+                self.even = Clock.schedule_interval(self.run, 1)
+                self.start = True
+            elif self.start:
+                self.ids.start.text = 'start' if self.ids.start.text != 'start' else 'pause'
+
+            if self.ids.start.text == 'start':
+                self.even()
+
+            else:
+                self.even.cancel()
      
-    def stop_button(self):
-        self.ids.stop.state = 'down' if self.ids.stop.state != 'down' else 'normal'
-        print(self.ids.stop.state)
-        self.sound.stop()
+    #def stop_button(self):
+        #self.ids.stop.state = 'down' if self.ids.stop.state != 'down' else 'normal'
+        #print(self.ids.stop.state)
+        #self.sound.stop()
            
     def run(self, i):
         self.timer -= 1
@@ -80,16 +97,16 @@ class DetailScreen(Screen):
         #sound = AudioSegment.from_file(os.path.join(script_directory, 'name.mp3'))
         #play(sound)
         #self.sound = SoundLoader.load('sound.ogg')
-        if self.timer == 0: # 3595:
+        if self.timer == 3597:
             os.system('notify-send Take_a_small_break')
+            self.ids.start.text = 'stop'
             self.ids.timer.text = '00:00:00'
             self.even.cancel()
             if self.sound:
                 self.sound.play()
 
-
     def delete(self):
-        pass
+        print('hello from delfet')
 
     def go_back(self):
         self.manager.current = 'main_screen'
@@ -110,8 +127,14 @@ class Content(BoxLayout):
     pass
 
 class TwoLineAvatarIconListItemCustom(TwoLineAvatarIconListItem):
+    
+    def delete(self, insta):
+        store = JsonStore('Items.json')
+        bar = store.get(self.text)
+        #print(self.text, bar)
 
-    pass
+        #self.parent.clear_widgets()
+        self.parent.remove_widget(self)
 
 class MainScreen(Screen):
 
