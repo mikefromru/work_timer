@@ -17,12 +17,23 @@ from kivy.core.audio import SoundLoader
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.uix.list import  TwoLineAvatarIconListItem
 from kivymd.uix.snackbar import Snackbar
+from kivy.uix.screenmanager import (
+    NoTransition,
+    FadeTransition,
+    SlideTransition,
+    CardTransition,
+    SwapTransition,
+    WipeTransition,
+    FallOutTransition,
+    RiseInTransition
+)
+
 
 from kivymd.uix.dialog import MDDialog
 from kivy.uix.boxlayout import BoxLayout
 from kivymd.uix.button import MDFlatButton
 
-from kivy.properties import NumericProperty, StringProperty
+from kivy.properties import NumericProperty, StringProperty, BooleanProperty
 
 from kivy.clock import Clock
 
@@ -45,22 +56,28 @@ class WindowManager(ScreenManager):
 class DetailScreen(Screen):
     
     name_ = StringProperty()
-    fuck = 'kekek'
     timer = NumericProperty()
-    tmp = StringProperty()
     start = False
-    stop = False
+    one_hour = 0
     
     def __init__(self, **kwargs):
         super(DetailScreen, self).__init__(**kwargs)
         Window.bind(on_keyboard=self.close_escape) # by ESC
         App.get_running_app().bind(on_stop=self.on_stop_) # by a plus of window
+        self.config = App.get_running_app().config
 
     def on_enter(self):
+
+        self.sound_config = self.config.get('Settings', 'sound')
+
         self.ids.name_project.title = self.name_.capitalize()
         self.store = JsonStore("Items.json")
         self.name_json = self.store.get(self.name_)
-        self.sound = SoundLoader.load('sounds/name.mp3')
+
+        try:
+            self.sound = SoundLoader.load('sounds/tinkalink2.wav')
+        except:
+            pass
 
     def start_button(self):
         if self.start == False:
@@ -72,17 +89,25 @@ class DetailScreen(Screen):
         if self.ids.start.text == 'pause':
             self.even.cancel()
             self.put_to_json(self)
-            #time_from_json = self.name_json.get('time')
-            #total = time_from_json + self.timer
-            #self.store.put(self.name_, time=total)
         else:
             self.even()
 
     def run(self, i):
         self.timer += 1
         self.ids.timer.text = time.strftime('%H:%M:%S', time.gmtime(self.timer))
-        ic(self.timer)
 
+        if self.sound_config == 'True':
+            self.one_hour += 1
+            if self.one_hour == 3600:
+                try:
+                    self.sound = SoundLoader.load('sounds/tinkalink2.wav')
+                except:
+                    pass
+
+                if self.sound:
+                    self.sound.play()
+                    self.one_hour = 0
+               
     def go_back(self):
         self.put_to_json(self)
         self.manager.current = 'main_screen'
@@ -95,11 +120,11 @@ class DetailScreen(Screen):
         except:
             pass
         self.sound.stop()
-        self.tmp = ''
         self.ids.timer.text = '00:00:00'
         self.ids.start.text = 'start'
         self.ids.name_project.title = ''
         self.timer = 0
+        self.one_hour = 0
 
     def close_escape(self, window, key, *args):
         if key == 27:
@@ -117,8 +142,6 @@ class DetailScreen(Screen):
             total = time_from_json + self.timer
             self.store.put(self.name_, time=total)
 
-
-
 class Content(BoxLayout):
 
     pass
@@ -128,8 +151,6 @@ class TwoLineAvatarIconListItemCustom(TwoLineAvatarIconListItem):
     def delete(self, insta):
         store = JsonStore('Items.json')
         name = self.text
-        #name = name.lower()
-        #store.delete(name)
         store.delete(self.text.lower())
         self.parent.remove_widget(self)
 
@@ -141,18 +162,54 @@ class AddScreen(Screen):
         name = name.lower()
         try:
             store.get(name)
-            ic('yes')
             Snackbar(text='You have it already').open()
         except:
             store.put(name, time=0)
             self.manager.current = 'main_screen'
-
-    def go_back(self):
-        self.manager.current = 'main_screen'
     
     def on_leave(self, *args):
         self.ids.name.text = ''
 
+class SettingsScreen(Screen):
+
+    active_sound = BooleanProperty()
+    active_theme = BooleanProperty()
+
+    def __init__(self, **kwargs):
+        super(SettingsScreen, self).__init__(**kwargs) 
+        self.config = App.get_running_app().config
+
+        theme = self.config.get('Settings', 'theme')
+        sound = self.config.get('Settings', 'sound')
+        
+        if sound == 'True':
+            self.active_sound = True
+        else:
+            self.active_sound = False
+
+        if theme == 'Dark':
+            self.active_theme = True
+        else:
+            self.active_theme = False
+    
+    def sound(self, insta, value):
+        if value == False:
+            self.config.set('Settings', 'sound', False)
+        else:
+            self.config.set('Settings', 'sound', True)
+
+        self.config.write()
+
+    def theme(self, insta, value):
+        if value == False:
+            self.config.set('Settings', 'theme', 'Light')
+            App.get_running_app().theme_cls.theme_style = 'Light'
+        else:
+            self.config.set('Settings', 'theme', 'Dark')
+            App.get_running_app().theme_cls.theme_style = 'Dark'
+
+        self.config.write()
+        
 class MainScreen(Screen):
 
     dialog = None
@@ -186,7 +243,7 @@ class MainScreen(Screen):
         self.manager.current = 'add_screen'
 
     def settings(self):
-        pass
+        self.manager.current = 'settings_screen'
 
     def callback_1(self, instance):
         DetailScreen.name_ = instance.text.lower()
@@ -200,17 +257,26 @@ class App(MDApp):
 
     def build(self):
         config = self.config
+        theme = config.get('Settings', 'theme')
+        ic(theme)
+        App.get_running_app().theme_cls.primary_palette = 'Purple'
+        App.get_running_app().theme_cls.theme_style = theme
         for x in self.templates:
             root = Builder.load_file(x)
-        self.window_manager = WindowManager()
+        self.window_manager = WindowManager(transition=SlideTransition(duration=.2))
         return self.window_manager
      
     def on_stop(self, *args):
-        ic('bye bye')
         os.sys.exit()
-
     
-    #def build_config(self, config):
-        #self.config.setdefaults('Items': {})
+    def build_config(self, config):
+        self.config.setdefaults('Settings', 
+        {
+            'theme': 'Light',
+            'sound': False
+        })
+    
+    def go_back(self):
+        App.get_running_app().window_manager.current = 'main_screen'
 
 App().run()
