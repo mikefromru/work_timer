@@ -1,0 +1,139 @@
+#:import MainScreen main.MainScreen
+<WindowManager>
+    MainScreen:
+        id: main
+        name: 'main_screen'
+    DetailScreen:
+        id: detail 
+        name: 'detail_screen'
+    AddScreen:
+        id: add 
+        name: 'add_screen'
+    SettingsScreen:
+        id: settings
+        name: 'settings_screen'
+
+<SettingsScreen>
+    MDBoxLayout:
+        orientation: 'vertical'
+        pos_hint: {'top': 1}
+        adaptive_height: True
+        MDToolbar:
+            title: 'Settings' 
+            left_action_items: [['arrow-left', lambda x: app.go_back()]]
+
+        MDBoxLayout:
+            padding: [dp(20),dp(20),dp(30),dp(0)]
+            orientation: 'horizontal'
+            adaptive_height: True
+            MDLabel:
+                text: 'Sound'
+                font_size: dp(18)
+            MDSwitch:
+                id: switch_sound
+                active: root.active_sound
+                on_active: root.sound(*args)
+
+        MDBoxLayout:
+            padding: [dp(20),dp(0),dp(30),dp(0)]
+            orientation: 'horizontal'
+            adaptive_height: True
+            MDLabel:
+                text: 'Dark mode'
+                font_size: dp(18)
+            MDSwitch:
+                id: switch_theme
+                active: root.active_theme
+                on_active: root.theme(*args)
+
+<AddScreen>
+    MDIconButton:
+        pos_hint: {'top': 1}
+        icon: 'arrow-left'
+        on_release: app.go_back()
+    MDCard:
+        orientation: 'vertical'
+        elevation: 0
+        padding: dp(8)
+        size_hint: None, None
+        size: 320, 400
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        padding: 20
+        spacing: 30
+        MDLabel:
+            text: 'New Project'
+            size_hint_y: None
+            font_style: 'Button'
+            halign: 'center'
+            height: self.texture_size[1]
+        MDTextField:
+            id: name
+            size_hint_x: None
+            width: dp(220)
+            pos_hint: {'center_x': .5}
+        MDRaisedButton:
+            text: 'ADD'
+            font_size: dp(30)
+            pos_hint: {'center_x': .5}
+            font_size: 15
+            on_release: root.add()
+        Widget:
+            size_hint_y: None
+            height: 150
+
+<DetailScreen>
+    MDToolbar:
+        id: name_project
+        title: ''
+        pos_hint: {'top': 1}
+        left_action_items: [['arrow-left', lambda x: root.go_back()]]
+
+    MDLabel:
+        id: timer
+        text: '00:00:00'
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        halign: 'center'
+        font_size: dp(20)
+    
+    MDRaisedButton:
+        id: start
+        text: 'start'
+        font_size: dp(20)
+        pos_hint: {'center_x': .5, 'center_y': .3}
+        on_release: root.start_button()
+
+<TwoLineAvatarIconListItemCustom>
+
+#    ImageLeftWidget:
+#        source: "data/logo/kivy-icon-256.png"
+
+    IconLeftWidget:
+        icon: 'apps'
+
+    IconRightWidget:
+        icon: 'delete'
+        on_release: root.delete(self)
+#        on_release: MainScreen.remove(self)
+
+<Content>
+    orientation: "vertical"
+    spacing: "12dp"
+    size_hint_y: None
+    height: "120dp"
+
+    MDTextField:
+        id: t1
+        hint_text: "Name"
+
+<MainScreen>
+    BoxLayout:
+        orientation: 'vertical'
+ 
+        MDToolbar:
+            title: 'Work-T' 
+            right_action_items: [['plus', lambda x: root.callback_0(self)],['cog', lambda x: root.settings()] ]
+                   
+        ScrollView:
+            MDList:
+                id: container
+
