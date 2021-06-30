@@ -1,9 +1,13 @@
+asttokens==2.0.5
 backcall==0.2.0
 certifi==2021.5.30
 chardet==4.0.0
+colorama==0.4.4
 decorator==5.0.9
 docutils==0.17.1
+executing==0.6.0
 ffpyplayer==4.3.2
+icecream==2.1.1
 idna==2.10
 ipython==7.25.0
 ipython-genutils==0.2.0
@@ -21,6 +25,7 @@ ptyprocess==0.7.0
 pydub==0.25.1
 Pygments==2.9.0
 requests==2.25.1
+six==1.16.0
 traitlets==5.0.5
 urllib3==1.26.5
 wcwidth==0.2.5

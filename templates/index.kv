@@ -6,37 +6,61 @@
     DetailScreen:
         id: detail 
         name: 'detail_screen'
+    AddScreen:
+        id: add 
+        name: 'add_screen'
+
+<AddScreen>
+    MDIconButton:
+        pos_hint: {'top': 1}
+        icon: 'arrow-left'
+        on_release: root.go_back()
+    MDCard:
+        orientation: 'vertical'
+        elevation: 0
+        padding: dp(8)
+        size_hint: None, None
+        size: 320, 400
+        pos_hint: {'center_x': .5, 'center_y': .5}
+        padding: 20
+        spacing: 30
+        MDLabel:
+            text: 'New Project'
+            size_hint_y: None
+            font_style: 'Button'
+            halign: 'center'
+            #font_size: dp(30)
+            height: self.texture_size[1]
+        MDTextField:
+            id: name
+#hint_text: 'Type name of project'
+            size_hint_x: None
+            width: dp(220)
+            pos_hint: {'center_x': .5}
+        MDRaisedButton:
+            text: 'ADD'
+            font_size: dp(30)
+            pos_hint: {'center_x': .5}
+            font_size: 15
+            on_release: root.add()
+        Widget:
+            size_hint_y: None
+            height: 150
 
 <DetailScreen>
 #    BoxLayout:
 #        orientation: 'vertical'
     MDToolbar:
+        id: name_project
+        title: ''
         pos_hint: {'top': 1}
         left_action_items: [['arrow-left', lambda x: root.go_back()]]
         right_action_items: [['delete', lambda x: root.delete()]]
 
-    BoxLayout:
-        orientation: 'horizontal'
-        MDChip:
-            text: '30 minutes'
-            icon: ''
-            color: .4470588235118, .1960787254902, 0, 1
-        MDChip:
-            text: '1 hour'
-            icon: ''
-            color: .4470588235118, .1960787254902, 0, 1
-        MDChip:
-            text: '2 hour'
-            color: .4470588235118, .1960787254902, 0, 1
-            icon: ''
-        MDChip:
-            text: '3 hour'
-            icon: ''
-            color: .4470588235118, .1960787254902, 0, 1
-
     MDLabel:
         id: timer
-        text: str(root.tmp)
+        text: '00:00:00'
+#text: str(root.tmp)
         pos_hint: {'center_x': .5, 'center_y': .5}
         halign: 'center'
         font_size: dp(20)
@@ -50,11 +74,11 @@
 
 <TwoLineAvatarIconListItemCustom>
 
-    ImageLeftWidget:
-        source: "data/logo/kivy-icon-256.png"
+#    ImageLeftWidget:
+#        source: "data/logo/kivy-icon-256.png"
 
-#IconLeftWidget:
-#        icon: 'plus'
+    IconLeftWidget:
+        icon: 'apps'
 
     IconRightWidget:
         icon: 'delete'
@@ -70,22 +94,16 @@
     MDTextField:
         id: t1
         hint_text: "Name"
-    MDTextField:
-        id: t2
 
 <MainScreen>
     BoxLayout:
         orientation: 'vertical'
-        
+ 
+        MDToolbar:
+            title: 'Work-T' 
+            right_action_items: [['plus', lambda x: root.callback_0(self)],['cog', lambda x: root.settings()] ]
+                   
         ScrollView:
             MDList:
                 id: container
-
-        MDBottomAppBar:
-            MDToolbar:
-                title: 'Work-Time'
-                icon: 'plus'
-                type: 'bottom'
-                on_action_button: root.callback_0(self.icon)
-
 

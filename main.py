@@ -16,6 +16,7 @@ from kivy.core.audio import SoundLoader
 ######## uix
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivymd.uix.list import  TwoLineAvatarIconListItem
+from kivymd.uix.snackbar import Snackbar
 
 from kivymd.uix.dialog import MDDialog
 from kivy.uix.boxlayout import BoxLayout
@@ -44,71 +45,46 @@ class WindowManager(ScreenManager):
 class DetailScreen(Screen):
     
     name_ = StringProperty()
+    fuck = 'kekek'
     timer = NumericProperty()
     tmp = StringProperty()
     start = False
     stop = False
+    
+    def __init__(self, **kwargs):
+        super(DetailScreen, self).__init__(**kwargs)
+        Window.bind(on_keyboard=self.close_escape) # by ESC
+        App.get_running_app().bind(on_stop=self.on_stop_) # by a plus of window
 
     def on_enter(self):
+        self.ids.name_project.title = self.name_.capitalize()
         self.store = JsonStore("Items.json")
-        self.var = self.store.get(self.name_)
-        self.timer = self.var.get('time')
-        self.tmp = time.strftime('%H:%M:%S', time.gmtime(self.timer))
-
-        #self.sound = SoundLoader.load('sound.ogg')
-        
+        self.name_json = self.store.get(self.name_)
         self.sound = SoundLoader.load('sounds/name.mp3')
 
     def start_button(self):
+        if self.start == False:
+            self.even = Clock.schedule_interval(self.run, 1)
+            self.start = True
+        elif self.start:
+            self.ids.start.text = 'start' if self.ids.start.text != 'start' else 'pause'
 
-        if self.ids.start.text == 'stop':
-            self.sound.stop()
-            ic('how are you')
+        if self.ids.start.text == 'pause':
             self.even.cancel()
-            self.stop = True
-            self.ids.start.text = 'start'
-            self.start = False
-            self.timer = self.var.get('time')
-            self.ids.timer.text = time.strftime('%H:%M:%S', time.gmtime(self.timer))
-             
+            self.put_to_json(self)
+            #time_from_json = self.name_json.get('time')
+            #total = time_from_json + self.timer
+            #self.store.put(self.name_, time=total)
         else:
-            if self.start == False:
-                self.even = Clock.schedule_interval(self.run, 1)
-                self.start = True
-            elif self.start:
-                self.ids.start.text = 'start' if self.ids.start.text != 'start' else 'pause'
+            self.even()
 
-            if self.ids.start.text == 'start':
-                self.even()
-
-            else:
-                self.even.cancel()
-     
-    #def stop_button(self):
-        #self.ids.stop.state = 'down' if self.ids.stop.state != 'down' else 'normal'
-        #print(self.ids.stop.state)
-        #self.sound.stop()
-           
     def run(self, i):
-        self.timer -= 1
-        var = time.gmtime(self.timer)
-        self.ids.timer.text = time.strftime('%H:%M:%S', var)
-
-        #sound = AudioSegment.from_file(os.path.join(script_directory, 'name.mp3'))
-        #play(sound)
-        #self.sound = SoundLoader.load('sound.ogg')
-        if self.timer == 3597:
-            os.system('notify-send Take_a_small_break')
-            self.ids.start.text = 'stop'
-            self.ids.timer.text = '00:00:00'
-            self.even.cancel()
-            if self.sound:
-                self.sound.play()
-
-    def delete(self):
-        print('hello from delfet')
+        self.timer += 1
+        self.ids.timer.text = time.strftime('%H:%M:%S', time.gmtime(self.timer))
+        ic(self.timer)
 
     def go_back(self):
+        self.put_to_json(self)
         self.manager.current = 'main_screen'
 
     def on_leave(self, *args):
@@ -120,7 +96,28 @@ class DetailScreen(Screen):
             pass
         self.sound.stop()
         self.tmp = ''
+        self.ids.timer.text = '00:00:00'
         self.ids.start.text = 'start'
+        self.ids.name_project.title = ''
+        self.timer = 0
+
+    def close_escape(self, window, key, *args):
+        if key == 27:
+            self.put_to_json(self)
+            os.sys.exit()
+
+    def on_stop_(self, *args):
+        self.put_to_json(self)
+
+    def put_to_json(self, *args):
+        if self.name_:
+            self.store = JsonStore("Items.json")
+            self.name_json = self.store.get(self.name_)
+            time_from_json = self.name_json.get('time')
+            total = time_from_json + self.timer
+            self.store.put(self.name_, time=total)
+
+
 
 class Content(BoxLayout):
 
@@ -130,11 +127,31 @@ class TwoLineAvatarIconListItemCustom(TwoLineAvatarIconListItem):
     
     def delete(self, insta):
         store = JsonStore('Items.json')
-        bar = store.get(self.text)
-        #print(self.text, bar)
-
-        #self.parent.clear_widgets()
+        name = self.text
+        #name = name.lower()
+        #store.delete(name)
+        store.delete(self.text.lower())
         self.parent.remove_widget(self)
+
+class AddScreen(Screen):
+        
+    def add(self):
+        store = JsonStore('Items.json')
+        name = self.ids.name.text
+        name = name.lower()
+        try:
+            store.get(name)
+            ic('yes')
+            Snackbar(text='You have it already').open()
+        except:
+            store.put(name, time=0)
+            self.manager.current = 'main_screen'
+
+    def go_back(self):
+        self.manager.current = 'main_screen'
+    
+    def on_leave(self, *args):
+        self.ids.name.text = ''
 
 class MainScreen(Screen):
 
@@ -143,64 +160,38 @@ class MainScreen(Screen):
     def __init__(self, **kwargs):
         super(MainScreen, self).__init__(**kwargs)
         Clock.schedule_once(self.get_it, 1)
-        self.store = JsonStore('Items.json')
-        for x in self.store:
-            print(self.store.get(x), '< --')
+
+    def on_enter(self, *args):
+        try:
+            self.ids.container.clear_widgets()
+            self.get_it(self) 
+        except:
+            pass
 
     def get_it(self, i):
+        self.store = JsonStore('Items.json')
         for x in self.store:
             time_ = self.store.get(x).get('time')
             var = time.gmtime(time_)
             time__ = time.strftime('%H:%M:%S', var)
 
             self.ids.container.add_widget(
-                TwoLineAvatarIconListItemCustom(text=f"{x}", 
+                TwoLineAvatarIconListItemCustom(text=f"{x.capitalize()}", 
                     secondary_text=str(time__), 
                     on_press=self.callback_1,
                 )
             )
 
     def callback_0(self, instance):
-        if not self.dialog:
-            self.dialog = MDDialog(
-                title='Create Item',
-                type='custom',
-                content_cls=Content(),
-                buttons=[
-                    MDFlatButton(
-                        text='CANCEL', on_release=self.close_dialog
-                    ),
-                    MDFlatButton(
-                        text='PUT', on_release=self.get_items
-                    ),
-                ],
-            )    
-        self.dialog.open()
+        self.manager.current = 'add_screen'
 
-    def get_items(self, *args):
-        name = self.dialog.content_cls.ids.t1.text
-        time_ = self.dialog.content_cls.ids.t2.text
-
-        try:
-            time_ = int(time_) * 3600
-        except:
-            time_ = 3600
-
-        self.store.put(name, time=time_) 
-        self.ids.container.clear_widgets()
-        Clock.schedule_once(self.get_it, 0.1)
-        self.close_dialog(self)
-
+    def settings(self):
+        pass
 
     def callback_1(self, instance):
-        DetailScreen.name_ = instance.text
+        DetailScreen.name_ = instance.text.lower()
         self.manager.current = 'detail_screen'
  
-    def close_dialog(self, instance):
-        self.dialog.content_cls.ids.t1.text = ''
-        self.dialog.content_cls.ids.t2.text = ''
-        self.dialog.dismiss()
-
 class App(MDApp):
     
     templates = (
@@ -213,6 +204,11 @@ class App(MDApp):
             root = Builder.load_file(x)
         self.window_manager = WindowManager()
         return self.window_manager
+     
+    def on_stop(self, *args):
+        ic('bye bye')
+        os.sys.exit()
+
     
     #def build_config(self, config):
         #self.config.setdefaults('Items': {})
