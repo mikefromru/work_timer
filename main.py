@@ -3,6 +3,8 @@ import os, sys
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 home = os.path.expanduser('~')
 script_directory = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(home + '/bin/notify_work/env/lib/python3.8/site-packages')
+#print(sys.path)
 
 from icecream import ic
 
@@ -69,7 +71,7 @@ class DetailScreen(Screen):
         self.sound_config = self.config.get('Settings', 'sound')
 
         self.ids.name_project.title = self.name_.capitalize()
-        self.store = JsonStore("Items.json")
+        self.store = JsonStore("store.json")
         self.name_json = self.store.get(self.name_)
 
         try:
@@ -86,7 +88,6 @@ class DetailScreen(Screen):
 
         if self.ids.start.text == 'pause':
             self.even.cancel()
-            self.put_to_json(self)
         else:
             self.even()
 
@@ -134,11 +135,12 @@ class DetailScreen(Screen):
 
     def put_to_json(self, *args):
         if self.name_:
-            self.store = JsonStore("Items.json")
+            self.store = JsonStore("store.json")
             self.name_json = self.store.get(self.name_)
             time_from_json = self.name_json.get('time')
             total = time_from_json + self.timer
             self.store.put(self.name_, time=total)
+
 
 class Content(BoxLayout):
 
@@ -147,7 +149,7 @@ class Content(BoxLayout):
 class TwoLineAvatarIconListItemCustom(TwoLineAvatarIconListItem):
     
     def delete(self, insta):
-        store = JsonStore('Items.json')
+        store = JsonStore('store.json')
         name = self.text
         store.delete(self.text.lower())
         self.parent.remove_widget(self)
@@ -155,7 +157,7 @@ class TwoLineAvatarIconListItemCustom(TwoLineAvatarIconListItem):
 class AddScreen(Screen):
         
     def add(self):
-        store = JsonStore('Items.json')
+        store = JsonStore('store.json')
         name = self.ids.name.text
         name = name.lower()
         try:
@@ -224,7 +226,7 @@ class MainScreen(Screen):
             pass
 
     def get_it(self, i):
-        self.store = JsonStore('Items.json')
+        self.store = JsonStore('store.json')
         for x in self.store:
             time_ = self.store.get(x).get('time')
             var = time.gmtime(time_)
