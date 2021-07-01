@@ -3,8 +3,6 @@ import os, sys
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 home = os.path.expanduser('~')
 script_directory = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(home + '/bin/notify_work/env/lib/python3.8/site-packages')
-#print(sys.path)
 
 from icecream import ic
 
